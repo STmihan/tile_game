@@ -107,11 +107,11 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     requestAnimationFrame(loop);
     tiles.forEach(tile => tile.update());
-    ctx.font = "32px Comic Sans MS";
+    ctx.font = "42px Comic Sans MS";
     ctx.textAlign = "center";
     ctx.fillStyle = "black";
     ctx.strokeText(currentNumber.toString(), 28, 56, 100);
-    ctx.font = "34px Comic Sans MS";
+    ctx.font = "38px Comic Sans MS";
     ctx.fillStyle = "white";
     ctx.fillText(currentNumber.toString(), 28, 56, 100);
     if (t > currentCheckpoint) {
