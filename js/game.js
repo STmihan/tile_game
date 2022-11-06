@@ -5,7 +5,7 @@ import {canvas} from "./index.js";
 import {ScoreText} from "./scoreText.js";
 
 export class Game extends GameLoop {
-    /// start | play | lose
+    /// start | play | delayed | lose
     #isPlaying = "start"
     #currentNumber = 0
     #tiles = []
@@ -154,7 +154,10 @@ export class Game extends GameLoop {
     }
 
     #lose() {
-        this.#isPlaying = "lose"
+        this.#isPlaying = "delayed"
+        setTimeout(() => {
+            this.#isPlaying = "lose"
+        }, 1000)
     }
 
     #restart() {
