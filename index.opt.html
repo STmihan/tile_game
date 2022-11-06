@@ -1,0 +1,142 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+        body {
+            overflow: hidden;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+<canvas></canvas>
+<script>class T {
+    constructor(r, n, s) {
+        this.row = r;
+        this.num = n;
+        this.size = s;
+
+        this.dim = {
+            w: tsz,
+            h: tsz * this.size,
+        };
+
+        this.pos = {
+            x: tsz * this.row + this.row * 5,
+            y: tls[tls.length - 1] == null ? 0 : tls[tls.length - 1].pos.y - 5 - this.dim.h,
+        };
+        this.s = 0;
+    }
+
+    upd() {
+        if (this.pos.y > c.height - this.dim.h && this.s !== 1)
+            this.s = -1;
+        if (p)
+            this.pos.y += spd;
+        if (this.s === 0)
+            ct.fillStyle = "black";
+        else if (this.s === -1)
+            ct.fillStyle = "red";
+        else if (this.s === 1)
+            ct.fillStyle = "green";
+        ct.fillRect(
+            this.pos.x,
+            this.pos.y,
+            this.dim.w,
+            this.dim.h);
+    }
+
+    contain(pos) {
+        ct.fillStyle = "red";
+        ct.fillRect(pos.x - 10, pos.y - 10, 20, 20);
+        return pos.x > this.pos.x &&
+            pos.x < this.pos.x + this.dim.w &&
+            pos.y > this.pos.y &&
+            pos.y < this.pos.y + this.dim.h;
+
+    }
+}
+
+const c = document.querySelector('canvas');
+c.width = document.querySelector('body').offsetWidth;
+c.height = document.querySelector('body').offsetHeight;
+const ct = c.getContext("2d");
+
+const tsz = (c.width - 5 * 2) / 3;
+let p = false;
+let cn = 0;
+let spd = 2;
+let tls = [];
+let cc = 0;
+
+c.onmousedown = (e) => {
+    let pos = {x: e.clientX - c.getBoundingClientRect().left, y: e.clientY - c.getBoundingClientRect().top};
+    if (!p)
+        p = true;
+    else
+    {
+        let result = false;
+        for (let i = 0; i < tls.length; i++) {
+            let tile = tls[i];
+            if (tile.num === cn) if (tile.contain(pos)) result = true;
+        }
+        if (result)
+            tls.forEach(t => {
+                if (t.num === cn && t.contain(pos))
+                    t.s = 1;
+            });
+        else tls.forEach(t => {
+            if (t.num === cn)
+                t.s = -1;
+        });
+        if (!tls.some(t => t.num === cn && t.s === 0)) ++cn;
+    }
+};
+
+const upd = (t) => {
+    if (p && tls.some(t => t.s === -1))
+        p = false;
+
+    ct.clearRect(0, 0, c.width, c.height);
+    requestAnimationFrame(upd);
+    tls.forEach(tile => tile.upd());
+    ct.font = "42px Comic Sans MS";
+    ct.textAlign = "center";
+    ct.fillStyle = "black";
+    ct.strokeText(cn, 28, 56, 100);
+    ct.font = "38px Comic Sans MS";
+    ct.fillStyle = "white";
+    ct.fillText(cn, 28, 56, 100);
+    if (t > cc) {
+        spd *= 1.2;
+        cc += 10000;
+    }
+    if (tls[Math.floor(tls.length / 2)].pos.y > c.height) {
+        tls.splice(0, Math.floor(tls.length / 2));
+        gt();
+    }
+};
+
+const gt = () => {
+    let m = tls.length + 40;
+    let nm = tls[tls.length - 1] != null ? tls[tls.length - 1].num + 1 : 0;
+    let n = 0;
+    for (let i = tls.length; i < m; i++) {
+        let row = Math.floor(Math.random() * 3);
+        let size = 1;
+        if (n < 1 && Math.floor(Math.random() * 2) === 0 || n === 0) {
+            n++;
+        } else {
+            nm++;
+            n = 0;
+        }
+        tls.push(new T(row, nm, size));
+    }
+};
+
+gt();
+upd();</script>
+</body>
+</html>
