@@ -21,6 +21,7 @@ export class Utils {
 
     static getCursorPosition = (canvas, event) => {
         const rect = canvas.getBoundingClientRect()
-        return {x: event.clientX - rect.left, y: event.clientY - rect.top}
+        let touch = event.touches[event.touches.length - 1];
+        return {x: touch.clientX - rect.left, y: touch.clientY - rect.top}
     }
 }

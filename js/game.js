@@ -18,7 +18,7 @@ export class Game extends GameLoop {
 
     init() {
         this.#generateTiles()
-        canvas.onmousedown = (e) => this.#callback(e)
+        canvas.ontouchstart = (e) => this.#callback(e)
 
         super.init()
     }
