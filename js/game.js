@@ -5,37 +5,44 @@ import {canvas} from "./index.js";
 import {ScoreText} from "./scoreText.js";
 
 export class Game extends GameLoop {
-    #isPlaying = false;
-    #currentNumber = 0;
-    #tiles = [];
+    /// start | play | lose
+    #isPlaying = "start"
+    #currentNumber = 0
+    #tiles = []
+    #currentCheckpoint = 0.0
+    #startTime = 0
+
     #text = new ScoreText()
 
     tileSize = (canvas.width - Game.offset * 2) / 3
-    #tilesPerGenerate = 40
 
+    static tilesPerGenerate = 40
     static offset = 5
-    static timeMultiplicationPerSecond = 1.2
+    static timeMultiplicationPerSecond = 1.1
+    static secondsForIncreaseSpeed = 5000
 
     init() {
-        this.#generateTiles()
-        if(Utils.isMobile())
+        if (Utils.isMobile())
             canvas.ontouchstart = (e) => this.#touchCallback(e)
         else
             canvas.onmousedown = (e) => this.#clickCallback(e)
 
+        this.#generateTiles()
         super.init()
     }
 
     update(t) {
         super.update()
-        if (this.#isPlaying && this.#tiles.some(t => t.state === -1)) {
+        if (this.#isPlaying === "play" && this.#tiles.some(t => t.state === -1)) {
             this.#lose()
         }
 
         this.#updateTiles();
         this.#updateText()
 
-        this.#increaseSpeed(t);
+        if (this.#isPlaying === "play") {
+            this.#increaseSpeed();
+        }
         this.#regenerateTiles();
     }
 
@@ -49,7 +56,7 @@ export class Game extends GameLoop {
     }
 
     #updateTiles() {
-        this.#tiles.forEach(t => t.freeze = !this.#isPlaying)
+        this.#tiles.forEach(t => t.freeze = !(this.#isPlaying === "play"))
 
         this.#tiles.forEach(tile => tile.update())
     }
@@ -61,15 +68,17 @@ export class Game extends GameLoop {
         }
     }
 
-    #increaseSpeed(t) {
-        if (t > this.currentCheckpoint) {
-            this.speed *= Game.timeMultiplicationPerSecond
-            this.currentCheckpoint += 10000
+    #increaseSpeed() {
+        const timeFromStart = this.currentTime - this.#startTime
+        if (timeFromStart > this.#currentCheckpoint) {
+            console.log(this.#currentCheckpoint)
+            this.#tiles.forEach(t => t.speed *= Game.timeMultiplicationPerSecond)
+            this.#currentCheckpoint += Game.secondsForIncreaseSpeed
         }
     }
 
     #generateTiles() {
-        let max = this.#tiles.length + this.#tilesPerGenerate
+        let max = this.#tiles.length + Game.tilesPerGenerate
 
         let num = this.#tiles[this.#tiles.length - 1] != null ? this.#tiles[this.#tiles.length - 1].number + 1 : 0
         let countThisNum = 0
@@ -96,19 +105,28 @@ export class Game extends GameLoop {
     }
 
     #touchCallback(e) {
-        if (!this.#isPlaying)
-            this.#isPlaying = true
-        else {
+        if (this.#isPlaying === "start")
+            this.#play();
+        else if (this.#isPlaying === "play") {
             this.#processClick(Utils.getTouchPosition(canvas, e))
+        } else if (this.#isPlaying === "lose") {
+            this.#restart()
         }
     };
 
     #clickCallback(e) {
-        if (!this.#isPlaying)
-            this.#isPlaying = true
-        else {
+        if (this.#isPlaying === "start")
+            this.#play();
+        else if (this.#isPlaying === "play") {
             this.#processClick(Utils.getCursorPosition(canvas, e))
+        } else if (this.#isPlaying === "lose") {
+            this.#restart()
         }
+    }
+
+    #play() {
+        this.#isPlaying = "play"
+        this.#startTime = this.currentTime
     }
 
     #processClick(pos) {
@@ -136,6 +154,16 @@ export class Game extends GameLoop {
     }
 
     #lose() {
-        this.#isPlaying = false
+        this.#isPlaying = "lose"
+    }
+
+    #restart() {
+        this.#isPlaying = "start"
+        this.#currentNumber = 0
+        this.#tiles = []
+        this.#currentCheckpoint = 0
+
+
+        this.#generateTiles()
     }
 }
