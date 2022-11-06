@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
@@ -29,12 +29,10 @@
         h: tileSize * this.size,
       };
 
-      this.startPosition = {
+      this.position = {
         x: tileSize * this.row + this.row * offset,
-        y: tiles[tiles.length - 1] == null ? 0 : tiles[tiles.length - 1].position.y - offset - this.dimentions.h,
+        y: this.number === 0 ? 0 : tiles.find(t => t.number === this.number - 1).position.y - offset - this.dimentions.h,
       };
-
-      this.position = this.startPosition;
       this.state = 0;
     }
 
@@ -153,19 +151,44 @@
     if (!tiles.some(tile => tile.number === currentNumber && tile.state === 0)) ++currentNumber;
   };
 
-  const rnd = (min, max) => {
-    return Math.floor(Math.random() * (max - min)) + min;
-  };
+  function rnd(min, max) { // min and max included
+    return Math.floor(Math.random() * (max - min + 1) + min)
+  }
+
+  function randomExcluded(min, max, excluded) {
+    let n = Math.floor(Math.random() * (max-min) + min);
+    let r = false
+    while (r === true)
+    if (n === excluded) {
+      n++;
+      if(n > max) {
+        n = min
+      } else {
+        return true
+      }
+    }
+    return n;
+  }
+
+  function getRow(num) {
+    let row = rnd(0, 2);
+    if (tiles.some(t => t.number === num && t.row === row)){
+      row = randomExcluded(num, row);
+    }
+    return row;
+  }
 
   const generateTiles = () => {
     let max = tiles.length + 40;
+
     let num = tiles[tiles.length - 1] != null ? tiles[tiles.length - 1].number + 1 : 0;
     let countThisNum = 0;
+
     for (let i = tiles.length; i < max; i++) {
-      let row = rnd(0, 3);
+      let row = getRow(num);
       let size = 1;
-      if (countThisNum < 1 && rnd(0, 2) === 0 || countThisNum === 0) {
-        countThisNum++;
+      if (countThisNum < 1 && rnd(0, 1) === 0 || countThisNum === 0) {
+          countThisNum++;
       } else {
         num++;
         countThisNum = 0;
