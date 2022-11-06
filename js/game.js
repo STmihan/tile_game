@@ -5,10 +5,12 @@ import {canvas} from "./index.js";
 import {ScoreText} from "./scoreText.js";
 
 export class Game extends GameLoop {
-    #isPlaying = false;
+    /// start | play | lose
+    #isPlaying = "start";
     #currentNumber = 0;
     #tiles = [];
     #text = new ScoreText()
+    #currentCheckpoint = 0
 
     tileSize = (canvas.width - Game.offset * 2) / 3
     #tilesPerGenerate = 40
@@ -18,7 +20,7 @@ export class Game extends GameLoop {
 
     init() {
         this.#generateTiles()
-        if(Utils.isMobile())
+        if (Utils.isMobile())
             canvas.ontouchstart = (e) => this.#touchCallback(e)
         else
             canvas.onmousedown = (e) => this.#clickCallback(e)
@@ -28,7 +30,7 @@ export class Game extends GameLoop {
 
     update(t) {
         super.update()
-        if (this.#isPlaying && this.#tiles.some(t => t.state === -1)) {
+        if (this.#isPlaying === "play" && this.#tiles.some(t => t.state === -1)) {
             this.#lose()
         }
 
@@ -49,7 +51,7 @@ export class Game extends GameLoop {
     }
 
     #updateTiles() {
-        this.#tiles.forEach(t => t.freeze = !this.#isPlaying)
+        this.#tiles.forEach(t => t.freeze = !(this.#isPlaying === "play"))
 
         this.#tiles.forEach(tile => tile.update())
     }
@@ -62,9 +64,9 @@ export class Game extends GameLoop {
     }
 
     #increaseSpeed(t) {
-        if (t > this.currentCheckpoint) {
-            this.speed *= Game.timeMultiplicationPerSecond
-            this.currentCheckpoint += 10000
+        if (t > this.#currentCheckpoint) {
+            this.#tiles.forEach(t => t.speed *= Game.timeMultiplicationPerSecond)
+            this.#currentCheckpoint += 10000
         }
     }
 
@@ -96,17 +98,17 @@ export class Game extends GameLoop {
     }
 
     #touchCallback(e) {
-        if (!this.#isPlaying)
-            this.#isPlaying = true
-        else {
+        if (this.#isPlaying === "start")
+            this.#isPlaying = "play"
+        else if (this.#isPlaying === "play") {
             this.#processClick(Utils.getTouchPosition(canvas, e))
         }
     };
 
     #clickCallback(e) {
-        if (!this.#isPlaying)
-            this.#isPlaying = true
-        else {
+        if (this.#isPlaying === "start")
+            this.#isPlaying = "play"
+        else if (this.#isPlaying === "play") {
             this.#processClick(Utils.getCursorPosition(canvas, e))
         }
     }
@@ -136,6 +138,6 @@ export class Game extends GameLoop {
     }
 
     #lose() {
-        this.#isPlaying = false
+        this.#isPlaying = "lose"
     }
 }

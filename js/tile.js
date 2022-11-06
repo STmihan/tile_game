@@ -18,7 +18,7 @@ export class Tile {
             y: this.number === 0 ? 0 : this.game.getTileWithNumber(this.number).position.y - Game.offset - this.dimentions.h,
         }
         this.state = 0
-        this.speed = 2
+        this.speed = this.number === 0 ? 2 : this.game.getTileWithNumber(this.number).speed
         this.freeze = false
     }
 
