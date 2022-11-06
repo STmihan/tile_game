@@ -18,7 +18,10 @@ export class Game extends GameLoop {
 
     init() {
         this.#generateTiles()
-        canvas.onmousedown = (e) => this.#callback(e)
+        if(Utils.isMobile())
+            canvas.ontouchstart = (e) => this.#touchCallback(e)
+        else
+            canvas.onmousedown = (e) => this.#clickCallback(e)
 
         super.init()
     }
@@ -92,15 +95,23 @@ export class Game extends GameLoop {
         return row
     }
 
-    #callback = (e) => {
+    #touchCallback(e) {
+        if (!this.#isPlaying)
+            this.#isPlaying = true
+        else {
+            this.#processClick(Utils.getTouchPosition(canvas, e))
+        }
+    };
+
+    #clickCallback(e) {
         if (!this.#isPlaying)
             this.#isPlaying = true
         else {
             this.#processClick(Utils.getCursorPosition(canvas, e))
         }
-    };
+    }
 
-    #processClick = (pos) => {
+    #processClick(pos) {
         let result = false
         for (let i = 0; i < this.#tiles.length; i++) {
             let tile = this.#tiles[i]
